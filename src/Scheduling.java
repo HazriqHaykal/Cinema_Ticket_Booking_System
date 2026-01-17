@@ -3,12 +3,14 @@ import java.awt.Color;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Properties;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import org.jdatepicker.impl.JDatePanelImpl;
 import org.jdatepicker.impl.JDatePickerImpl;
@@ -73,6 +75,22 @@ public class Scheduling {
         schedulingFr.setVisible(true);
     }
 
+    public boolean isValidDate() {
+      Date selectedDate = (Date) datePicker.getModel().getValue();
+      Date today = new Date();
+
+      if (selectedDate != null && selectedDate.before(today)) {
+         JOptionPane.showMessageDialog(
+            null,
+            "Error: You cannot schedule a movie for a past date.",
+            "Date Error",
+            JOptionPane.ERROR_MESSAGE
+         );
+         return false;
+      }
+      return true;
+   }
+
     public class DateLabelFormatter extends AbstractFormatter {
 
         private String datePattern = "yyyy-MM-dd";
@@ -96,3 +114,4 @@ public class Scheduling {
     }
 
 }
+
