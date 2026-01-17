@@ -4,6 +4,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 
 public class ChangePass {
 
@@ -14,15 +15,19 @@ public class ChangePass {
     JPasswordField newPass;
     JButton confirm;
     JButton cancel;
+    JLabel phoneLbl;
+    JTextField phoneTxt;
 
     public ChangePass() {
         initGUI();
     }
 
     public void initGUI() {
-        miniFrame = new JFrame("Change Password");
+        miniFrame = new JFrame("Update Profile");
         oldPassLbl = new JLabel("Your current password:");
         newPassLbl = new JLabel("Your new password:");
+        phoneLbl = new JLabel("Update Phone #:");
+        phoneTxt = new JTextField();
         oldPass = new JPasswordField();
         newPass = new JPasswordField();
         confirm = new JButton("Confirm");
@@ -32,13 +37,17 @@ public class ChangePass {
         newPassLbl.setBounds(10, 80, 150, 30);
         oldPass.setBounds(160, 30, 300, 30);
         newPass.setBounds(160, 80, 300, 30);
-        cancel.setBounds(240, 140, 100, 30);
+        phoneLbl.setBounds(10, 130, 150, 30);
+        phoneTxt.setBounds(160, 130, 300, 30);
+        cancel.setBounds(240, 180, 100, 30);
         cancel.setBackground(Color.black);
         cancel.setForeground(Color.WHITE);
-        confirm.setBounds(360, 140, 100, 30);
+        confirm.setBounds(360, 180, 100, 30);
         confirm.setBackground(Color.black);
         confirm.setForeground(Color.WHITE);
 
+        miniFrame.add(phoneLbl); // Add to frame
+        miniFrame.add(phoneTxt);
         miniFrame.add(oldPassLbl);
         miniFrame.add(oldPass);
         miniFrame.add(newPassLbl);
@@ -48,7 +57,7 @@ public class ChangePass {
 
         miniFrame.setLayout(null);
         miniFrame.setResizable(false);
-        miniFrame.setSize(500, 250);
+        miniFrame.setSize(500, 300);
         miniFrame.setVisible(true);
     }
 }
