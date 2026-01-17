@@ -299,18 +299,26 @@ public class DataConnector {
         return 0;
     }
 
-    public void confirmBooking(String uid, String given_id) {
-        try {
-            String sql = "insert into Ticket (User_Login_ID,Schedule_ID) VALUES(?,?)";
-            PreparedStatement pst = con.prepareStatement(sql);
-            pst.setString(1, uid);
-            pst.setString(2, given_id);
-            pst.executeUpdate();
-            JOptionPane.showMessageDialog(null, "Your seats are reserved :)", "Booking Successful", JOptionPane.INFORMATION_MESSAGE);
-        } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(null, "No more seats available :(", "Booking Failed", JOptionPane.INFORMATION_MESSAGE);
+   public void confirmBooking(String uid, String given_id, String userType, double originalPrice) {
+    try {
+        // CR-001: Student Discount Logic
+        double finalPrice = originalPrice;
+        if (userType.equalsIgnoreCase("Student")) {
+            finalPrice = originalPrice * 0.80; // Apply 20% Discount
+            JOptionPane.showMessageDialog(null, "Student Discount Applied! New Price: RM " + finalPrice);
         }
+
+        String sql = "insert into Ticket (User_Login_ID,Schedule_ID) VALUES(?,?)";
+        PreparedStatement pst = con.prepareStatement(sql);
+        pst.setString(1, uid);
+        pst.setString(2, given_id);
+        pst.executeUpdate();
+        JOptionPane.showMessageDialog(null, "Your seats are reserved :)", "Booking Successful", JOptionPane.INFORMATION_MESSAGE);
+    } catch (SQLException ex) {
+        JOptionPane.showMessageDialog(null, "Booking Failed", "Error", JOptionPane.ERROR_MESSAGE);
     }
+}
+
 
     public void cancelBooking(String uid, String given_id) {
         try {
