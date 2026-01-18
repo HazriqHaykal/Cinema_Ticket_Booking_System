@@ -251,9 +251,32 @@ public class MainGUI {
                     addMovieFrame.durationTextField.setText("");
                 }
             } else if (e.getActionCommand().equals("Confirm Booking")) {
+     try {
+        // 1. Extract the base price from the UI label (e.g., "Price: 20/-")
+        String priceText = MD.rate.getText().replace("Price: ", "").replace("/-", "").trim(); [cite: 53]
+        double originalPrice = Double.parseDouble(priceText); 
 
-                dCon.confirmBooking(id, MD.given_id);
-                MD.MDetailsFr.dispose();
+        // 2. Interaction: Prompt user for their category (Student or Standard)
+        String[] options = {"Standard", "Student"}; [cite: 26]
+        String userType = (String) JOptionPane.showInputDialog(
+            fr, 
+            "Select Ticket Category:", 
+            "Pricing Tier", 
+            JOptionPane.QUESTION_MESSAGE, 
+            null, 
+            options, 
+            options[0]
+        ); [cite: 39]
+
+        // 3. If a category was selected, pass all 4 parameters to the backend
+        if (userType != null) {
+            // This now matches your updated backend signature in DataConnector.java
+            dCon.confirmBooking(id, MD.given_id, userType, originalPrice); [cite: 38]
+            MD.MDetailsFr.dispose(); [cite: 53]
+        }
+    } catch (Exception ex) {
+        JOptionPane.showMessageDialog(null, "Error processing price.", "Error", JOptionPane.ERROR_MESSAGE);
+    }
             } else if (e.getActionCommand().equals("Cancle Booking")) {
 
                 dCon.cancelBooking(id, MD.given_id);

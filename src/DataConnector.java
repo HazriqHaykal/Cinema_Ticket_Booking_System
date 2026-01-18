@@ -298,13 +298,11 @@ public class DataConnector {
         }
         return 0;
     }
-
-   public void confirmBooking(String uid, String given_id, String userType, double originalPrice) {
+    public void confirmBooking(String uid, String given_id, String userType, double originalPrice) {
     try {
-        // CR-001: Student Discount Logic
         double finalPrice = originalPrice;
         if (userType.equalsIgnoreCase("Student")) {
-            finalPrice = originalPrice * 0.80; // Apply 20% Discount
+            finalPrice = originalPrice * 0.80; 
             JOptionPane.showMessageDialog(null, "Student Discount Applied! New Price: RM " + finalPrice);
         }
 
