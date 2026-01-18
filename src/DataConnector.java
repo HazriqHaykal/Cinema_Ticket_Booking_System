@@ -6,8 +6,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 public class DataConnector {
@@ -155,16 +153,24 @@ public class DataConnector {
         return null;
     }
 
+    //Added method to get movies by title or genre
     public ResultSet getSearchedMovie(String searchText) {
         searchText = searchText.trim();
         searchText = "%" + searchText + "%";
         try {
-            rs = stat.executeQuery("SELECT SCHEDULE.SCHEDULE_ID, movie.Movie_Title, movie.Movie_Cover_Photo FROM movie,SCHEDULE where SCHEDULE.MOVIE_ID = movie.Movie_ID AND schedule.s_date >= sysdate() AND UPPER(movie_title) LIKE UPPER('" + searchText + "')");
-
+            // CR-005: Added OR condition to fetch matches by Genre
+            String query = "SELECT SCHEDULE.SCHEDULE_ID, movie.Movie_Title, movie.Movie_Cover_Photo " +
+                           "FROM movie,SCHEDULE " + 
+                           "WHERE SCHEDULE.MOVIE_ID = movie.Movie_ID " + 
+                           "AND schedule.s_date >= sysdate() " + 
+                           "AND (UPPER(movie_title) LIKE UPPER('" + searchText + "') " + 
+                           "OR UPPER(Movie_Genere) LIKE UPPER('" + searchText + "'))";
+    
+            rs = stat.executeQuery(query);
             return rs;
-
+    
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(null, "SignIn Not Successful", "SignIn", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Search Failed", "Error", JOptionPane.INFORMATION_MESSAGE);
         }
         return null;
     }
@@ -202,20 +208,27 @@ public class DataConnector {
         return 0;
     }
 
+    //Added method to get number of search results by title or genre
     public int getNumberOfSearchResults(String searchText) {
         searchText = searchText.trim();
         searchText = "%" + searchText + "%";
         try {
             int n = 0;
-            ResultSet r = stat.executeQuery(" Select count(movie_id) from movie Join SCHEDULE using(MOVIE_ID) where schedule.s_date >= sysdate() AND UPPER(movie_title) LIKE UPPER('" + searchText + "')");
+            // CR-005: Added OR condition to count matches in Genre too
+            String query = "Select count(movie_id) from movie Join SCHEDULE using(MOVIE_ID) " + 
+                           "where schedule.s_date >= sysdate() " + 
+                           "AND (UPPER(movie_title) LIKE UPPER('" + searchText + "') " + 
+                           "OR UPPER(Movie_Genere) LIKE UPPER('" + searchText + "'))"; 
+                           
+            ResultSet r = stat.executeQuery(query);
             if (r.next()) {
                 n = r.getInt(1);
             }
             r.close();
             return n;
-
+    
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(null, "Try without punctuation marks", "Error", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Search Error", "Error", JOptionPane.ERROR_MESSAGE);
         }
         return 0;
     }
