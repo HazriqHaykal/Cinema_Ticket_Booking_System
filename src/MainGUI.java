@@ -50,8 +50,14 @@ public class MainGUI {
 
     public void initGUI() throws SQLException {
         fr = new JFrame("Book It");
-        logo = new ImageIcon(getClass().getClassLoader().getResource(".\\res\\logo.jpg"));
-        fr.setIconImage(logo.getImage());
+        try {
+            logo = new ImageIcon(getClass().getClassLoader().getResource("res/logo.jpg"));
+            if (logo.getImage() != null) {
+                fr.setIconImage(logo.getImage());
+            }
+        } catch (Exception e) {
+            System.out.println("Logo not found: " + e.getMessage());
+        }
         sUp = new SignUpGUI();
         sIn = new SignInGUI();
         hnd = new ButtonHandler();
@@ -251,32 +257,45 @@ public class MainGUI {
                     addMovieFrame.durationTextField.setText("");
                 }
             } else if (e.getActionCommand().equals("Confirm Booking")) {
-     try {
-        // 1. Extract the base price from the UI label (e.g., "Price: 20/-")
-        String priceText = MD.rate.getText().replace("Price: ", "").replace("/-", "").trim(); [cite: 53]
-        double originalPrice = Double.parseDouble(priceText); 
-
-        // 2. Interaction: Prompt user for their category (Student or Standard)
-        String[] options = {"Standard", "Student"}; [cite: 26]
-        String userType = (String) JOptionPane.showInputDialog(
-            fr, 
-            "Select Ticket Category:", 
-            "Pricing Tier", 
-            JOptionPane.QUESTION_MESSAGE, 
-            null, 
-            options, 
-            options[0]
-        ); [cite: 39]
-
-        // 3. If a category was selected, pass all 4 parameters to the backend
-        if (userType != null) {
-            // This now matches your updated backend signature in DataConnector.java
-            dCon.confirmBooking(id, MD.given_id, userType, originalPrice); [cite: 38]
-            MD.MDetailsFr.dispose(); [cite: 53]
-        }
-    } catch (Exception ex) {
-        JOptionPane.showMessageDialog(null, "Error processing price.", "Error", JOptionPane.ERROR_MESSAGE);
-    }
+                System.out.println("Confirm Booking clicked...");
+                String priceText = "100";
+                if (MD.rate != null && MD.rate.getText() != null) {
+                    priceText = MD.rate.getText().replace("Price: ", "").replace("/-", "").trim();
+                }
+                System.out.println("Price extracted: " + priceText);
+                double originalPrice = Double.parseDouble(priceText);
+                String[] options = {"Standard", "Student"};
+                String userType = (String) JOptionPane.showInputDialog(
+                    MD.MDetailsFr,
+                    "Select Ticket Category:",
+                    "Pricing Tier",
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    options,
+                    options[0]
+                );
+                System.out.println("User selected: " + userType);
+                if (userType != null) {
+                    System.out.println("Processing booking for: " + id + " Schedule: " + MD.given_id);
+                    new Thread(() -> {
+                        try {
+                            dCon.confirmBooking(id, MD.given_id, userType, originalPrice);
+                            MD.MDetailsFr.dispose();
+                            System.out.println("Booking done, updating dashboard...");
+                            try {
+                                DB.updateDashboard();
+                                HP.updateHomePnl();
+                            } catch (Exception ex) {
+                                System.out.println("Dashboard update error: " + ex.getMessage());
+                            }
+                        } catch (Exception ex) {
+                            System.err.println("Exception: " + ex.getMessage());
+                            ex.printStackTrace();
+                        }
+                    }).start();
+                } else {
+                    System.out.println("Booking cancelled by user");
+                }
             } else if (e.getActionCommand().equals("Cancle Booking")) {
 
                 dCon.cancelBooking(id, MD.given_id);
@@ -345,9 +364,10 @@ public class MainGUI {
 
                 cancleBookBtn = new JButton("Cancle Booking");
                 cancleBookBtn.addActionListener(hnd);
-                cancleBookBtn.setBounds(350, 400, 300, 50);
+                cancleBookBtn.setBounds(200, 480, 300, 50);
                 cancleBookBtn.setBackground(Color.black);
                 cancleBookBtn.setForeground(Color.WHITE);
+                cancleBookBtn.setFont(new Font("Arial", Font.BOLD, 14));
 
                 MD.MDetailsFr.add(movie_name);
                 MD.MDetailsFr.add(movie_picture);
@@ -355,6 +375,7 @@ public class MainGUI {
                 MD.MDetailsFr.add(date);
                 MD.MDetailsFr.add(time);
                 MD.MDetailsFr.add(cancleBookBtn);
+                MD.MDetailsFr.repaint();
             } catch (SQLException ex) {
                 ex.printStackTrace();
             } catch (IOException ex) {
@@ -491,9 +512,10 @@ public class MainGUI {
 
                 bookBtn = new JButton("Confirm Booking");
                 bookBtn.addActionListener(hnd);
-                bookBtn.setBounds(350, 400, 300, 50);
+                bookBtn.setBounds(200, 480, 300, 50);
                 bookBtn.setBackground(Color.black);
                 bookBtn.setForeground(Color.WHITE);
+                bookBtn.setFont(new Font("Arial", Font.BOLD, 14));
 
                 MD.MDetailsFr.add(movie_name);
                 MD.MDetailsFr.add(movie_picture);
@@ -501,6 +523,7 @@ public class MainGUI {
                 MD.MDetailsFr.add(date);
                 MD.MDetailsFr.add(time);
                 MD.MDetailsFr.add(bookBtn);
+                MD.MDetailsFr.repaint();
             } catch (SQLException ex) {
                 ex.printStackTrace();
             } catch (IOException ex) {

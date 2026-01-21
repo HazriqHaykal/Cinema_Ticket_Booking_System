@@ -16,25 +16,35 @@ public class DataConnector {
 
     DataConnector() {
         try {
-
-            Class.forName("com.mysql.jdbc.Driver");
-            con = DriverManager.getConnection("jdbc:mysql://localhost:3306/cinematicketbooking", "root", "");
+            // Try new driver first, fall back to old driver if needed
+            try {
+                Class.forName("com.mysql.cj.jdbc.Driver");
+            } catch (ClassNotFoundException e) {
+                Class.forName("com.mysql.jdbc.Driver");
+            }
+            con = DriverManager.getConnection("jdbc:mysql://localhost:3306/cinematicketbooking?useSSL=false&serverTimezone=UTC", "root", "");
             stat = con.createStatement();
+            System.out.println("Database connected successfully!");
         } catch (Exception ex) {
+            System.err.println("Database connection failed: " + ex.getMessage());
             ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Database Error: " + ex.getMessage(), "Connection Failed", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     public void addUserRecord(String name, String pNo, String CNIC, String password) {
         try {
-            stat.executeUpdate("insert into user (User_Name,Password,PhoneNo,CNIC) VALUES('"
-                    + name + "','" + password + "','"
-                    + pNo + "','" + CNIC + "')");
+            String sql = "INSERT INTO user (User_Name, Password, PhoneNo, CNIC) VALUES(?, ?, ?, ?)";
+            PreparedStatement pst = con.prepareStatement(sql);
+            pst.setString(1, name);
+            pst.setString(2, password);
+            pst.setString(3, pNo);
+            pst.setString(4, CNIC);
+            pst.executeUpdate();
+            pst.close();
             JOptionPane.showMessageDialog(null, "SignUP Successful", "SignUp", JOptionPane.INFORMATION_MESSAGE);
-
-            //System.out.println(password);
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(null, "SignUP Not Successful", "SignUp Faild", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(null, "SignUP Not Successful: " + ex.getMessage(), "SignUp Failed", JOptionPane.INFORMATION_MESSAGE);
             ex.printStackTrace();
         }
     }
@@ -312,23 +322,48 @@ public class DataConnector {
         return 0;
     }
     public void confirmBooking(String uid, String given_id, String userType, double originalPrice) {
-    try {
-        double finalPrice = originalPrice;
-        if (userType.equalsIgnoreCase("Student")) {
-            finalPrice = originalPrice * 0.80; 
-            JOptionPane.showMessageDialog(null, "Student Discount Applied! New Price: RM " + finalPrice);
+        if (con == null) {
+            JOptionPane.showMessageDialog(null, "Database not connected", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
         }
+        try {
+            double finalPrice = originalPrice;
+            String message = "Standard Ticket";
+            if (userType != null && userType.equalsIgnoreCase("Student")) {
+                finalPrice = originalPrice * 0.80;
+                message = "Student Discount Applied! Final Price: " + finalPrice;
+            } else {
+                message = "Standard Ticket. Price: " + originalPrice;
+            }
 
-        String sql = "insert into Ticket (User_Login_ID,Schedule_ID) VALUES(?,?)";
-        PreparedStatement pst = con.prepareStatement(sql);
-        pst.setString(1, uid);
-        pst.setString(2, given_id);
-        pst.executeUpdate();
-        JOptionPane.showMessageDialog(null, "Your seats are reserved :)", "Booking Successful", JOptionPane.INFORMATION_MESSAGE);
-    } catch (SQLException ex) {
-        JOptionPane.showMessageDialog(null, "Booking Failed", "Error", JOptionPane.ERROR_MESSAGE);
+            System.out.println("Inserting booking: User=" + uid + " Schedule=" + given_id);
+            
+            String sql = "INSERT INTO Ticket (User_Login_ID, Schedule_ID) VALUES(?, ?)";
+            PreparedStatement pst = con.prepareStatement(sql);
+            pst.setInt(1, Integer.parseInt(uid));
+            pst.setInt(2, Integer.parseInt(given_id));
+            int result = pst.executeUpdate();
+            pst.close();
+            
+            System.out.println("Booking result: " + result);
+            if (result > 0) {
+                JOptionPane.showMessageDialog(null, message + "\nBooking Successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, "Booking could not be completed", "Failed", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (NumberFormatException ex) {
+            System.err.println("Number format error: " + ex.getMessage());
+            JOptionPane.showMessageDialog(null, "Invalid data format", "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (SQLException ex) {
+            System.err.println("SQL Error: " + ex.getMessage());
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Booking Failed: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception ex) {
+            System.err.println("General Error: " + ex.getMessage());
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
-}
 
 
     public void cancelBooking(String uid, String given_id) {
