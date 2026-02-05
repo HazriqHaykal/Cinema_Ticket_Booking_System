@@ -202,6 +202,34 @@ public class MainGUI {
                 addMovieFrame.cancel.addActionListener(hnd);
                 addMovieFrame.choosePhoto.addActionListener(hnd);
                 addMovieFrame.addRecordBtn.addActionListener(hnd);
+            
+            } else if (e.getActionCommand().equals("Revenue Dashboard")) {
+                // RISK MITIGATION: Revenue queries only execute on explicit button click,
+                // not automatically, to prevent database performance impact
+                try {
+                    Ad.displayRevenueDashboard();
+                } catch (SQLException ex) {
+                    Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+                    JOptionPane.showMessageDialog(null, "Error loading revenue dashboard", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } else if (e.getActionCommand().equals("Refresh") && Ad.dashboardPnl.isVisible()) {
+                // RISK MITIGATION: Refresh revenue data only on explicit button click
+                try {
+                    Ad.displayRevenueDashboard();
+                } catch (SQLException ex) {
+                    Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+                    JOptionPane.showMessageDialog(null, "Error refreshing revenue data", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } else if (e.getActionCommand().equals("Back to Home")) {
+                try {
+                    Ad.updateDashboard();
+                } catch (SQLException ex) {
+                    Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+                    JOptionPane.showMessageDialog(null, "Error loading dashboard", "Error", JOptionPane.ERROR_MESSAGE);
+                } catch (IOException ex) {
+                    Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+                    JOptionPane.showMessageDialog(null, "Error loading dashboard", "Error", JOptionPane.ERROR_MESSAGE);
+                }
             } else if (e.getActionCommand().equals("Cancel")) {
                 if (addMovieFrame != null) {
                     addMovieFrame.miniFrame.dispose();

@@ -411,4 +411,54 @@ public class DataConnector {
         }
     }
 
+    /**
+     * Calculates total revenue from all ticket sales.
+     * RISK MITIGATION: This method performs heavy aggregation queries (SUM).
+     * To prevent performance impact, this should ONLY be called on-demand when
+     * the admin explicitly clicks the "Revenue Dashboard" button, NOT automatically
+     * on panel load or refresh.
+     * 
+     * @return Total revenue as sum of all Scheduled_Movie_Price from sold tickets
+     */
+    public double getTotalRevenue() {
+        try {
+            double totalRevenue = 0.0;
+            ResultSet r = stat.executeQuery("SELECT SUM(s.Scheduled_Movie_Price) FROM ticket t JOIN schedule s ON t.Schedule_ID = s.Schedule_ID");
+            if (r.next()) {
+                totalRevenue = r.getDouble(1);
+            }
+            r.close();
+            return totalRevenue;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error calculating revenue", "Error", JOptionPane.INFORMATION_MESSAGE);
+        }
+        return 0.0;
+    }
+
+    /**
+     * Gets the total count of tickets sold.
+     * RISK MITIGATION: This method performs aggregation queries (COUNT).
+     * To prevent performance impact, this should ONLY be called on-demand when
+     * the admin explicitly clicks the "Revenue Dashboard" button, NOT automatically
+     * on panel load or refresh.
+     * 
+     * @return Total number of tickets sold
+     */
+    public int getTotalTicketsSold() {
+        try {
+            int totalTickets = 0;
+            ResultSet r = stat.executeQuery("SELECT COUNT(Ticket_ID) FROM ticket");
+            if (r.next()) {
+                totalTickets = r.getInt(1);
+            }
+            r.close();
+            return totalTickets;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error counting tickets", "Error", JOptionPane.INFORMATION_MESSAGE);
+        }
+        return 0;
+    }
+
 }
