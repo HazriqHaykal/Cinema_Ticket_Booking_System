@@ -99,10 +99,13 @@ public class MainGUI {
                 sIn.signInPnl.setVisible(true);
             } else if (e.getSource().equals(sUp.signUpBtn)) {
 
-                if (sUp.userName.getText().trim().equals("") || sUp.cnic.getText().trim().equals("") || sUp.pass.getText().trim().equals("") || sUp.phone.getText().trim().equals("")) {
-                    JOptionPane.showMessageDialog(null, "Please Fill Every Field", "SignUp", JOptionPane.INFORMATION_MESSAGE);
+                if (sUp.userName.getText().trim().equals("") || sUp.cnic.getText().trim().equals("")
+                        || sUp.pass.getText().trim().equals("") || sUp.phone.getText().trim().equals("")) {
+                    JOptionPane.showMessageDialog(null, "Please Fill Every Field", "SignUp",
+                            JOptionPane.INFORMATION_MESSAGE);
                 } else {
-                    dCon.addUserRecord(sUp.userName.getText(), sUp.phone.getText(), sUp.cnic.getText(), sUp.pass.getText());
+                    dCon.addUserRecord(sUp.userName.getText(), sUp.phone.getText(), sUp.cnic.getText(),
+                            sUp.pass.getText());
                     sUp.userName.setText("");
                     sUp.cnic.setText("");
                     sUp.pass.setText("");
@@ -114,7 +117,8 @@ public class MainGUI {
             } else if (e.getSource().equals(sIn.signInBtn)) {
 
                 if (sIn.CNIC.getText().trim().equals("") || sIn.pass.getText().trim().equals("")) {
-                    JOptionPane.showMessageDialog(null, "Please Fill Every Field", "Sign In Failed", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Please Fill Every Field", "Sign In Failed",
+                            JOptionPane.INFORMATION_MESSAGE);
                 } else {
 
                     String uName = dCon.getUserName(sIn.CNIC.getText(), sIn.pass.getText());
@@ -202,7 +206,7 @@ public class MainGUI {
                 addMovieFrame.cancel.addActionListener(hnd);
                 addMovieFrame.choosePhoto.addActionListener(hnd);
                 addMovieFrame.addRecordBtn.addActionListener(hnd);
-            
+
             } else if (e.getActionCommand().equals("Revenue Dashboard")) {
                 // RISK MITIGATION: Revenue queries only execute on explicit button click,
                 // not automatically, to prevent database performance impact
@@ -210,7 +214,8 @@ public class MainGUI {
                     Ad.displayRevenueDashboard();
                 } catch (SQLException ex) {
                     Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-                    JOptionPane.showMessageDialog(null, "Error loading revenue dashboard", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Error loading revenue dashboard", "Error",
+                            JOptionPane.ERROR_MESSAGE);
                 }
             } else if (e.getActionCommand().equals("Refresh") && Ad.dashboardPnl.isVisible()) {
                 // RISK MITIGATION: Refresh revenue data only on explicit button click
@@ -218,7 +223,8 @@ public class MainGUI {
                     Ad.displayRevenueDashboard();
                 } catch (SQLException ex) {
                     Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-                    JOptionPane.showMessageDialog(null, "Error refreshing revenue data", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Error refreshing revenue data", "Error",
+                            JOptionPane.ERROR_MESSAGE);
                 }
             } else if (e.getActionCommand().equals("Back to Home")) {
                 try {
@@ -237,12 +243,15 @@ public class MainGUI {
                     changePassFrame.miniFrame.dispose();
                 }
             } else if (e.getActionCommand().equals("Confirm")) {
-                int n = dCon.updatePassword(sIn.CNIC.getText(), changePassFrame.oldPass.getText(), changePassFrame.newPass.getText());
+                int n = dCon.updatePassword(sIn.CNIC.getText(), changePassFrame.oldPass.getText(),
+                        changePassFrame.newPass.getText());
                 if (n < 1) {
-                    JOptionPane.showMessageDialog(null, "Invalid Password", "Password Update fail", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Invalid Password", "Password Update fail",
+                            JOptionPane.INFORMATION_MESSAGE);
                 } else {
                     changePassFrame.miniFrame.dispose();
-                    JOptionPane.showMessageDialog(null, "Password Updated Successfully", "Password Update", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Password Updated Successfully", "Password Update",
+                            JOptionPane.INFORMATION_MESSAGE);
                 }
 
             } else if (e.getActionCommand().equals("\u2770 Home")) {
@@ -273,13 +282,18 @@ public class MainGUI {
                     }
 
                 } catch (FileNotFoundException ex) {
-                    JOptionPane.showMessageDialog(null, "Select a .jpg file", "Selection failed", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Select a .jpg file", "Selection failed",
+                            JOptionPane.INFORMATION_MESSAGE);
                 }
             } else if (e.getActionCommand().equals("Add to Record")) {
-                if (addMovieFrame.titleTextField.getText().trim().equals("") || addMovieFrame.genereTextField.getText().trim().equals("") || addMovieFrame.durationTextField.getText().trim().equals("")) {
-                    JOptionPane.showMessageDialog(null, "Please Fill Every Field", "Insertion", JOptionPane.INFORMATION_MESSAGE);
+                if (addMovieFrame.titleTextField.getText().trim().equals("")
+                        || addMovieFrame.genereTextField.getText().trim().equals("")
+                        || addMovieFrame.durationTextField.getText().trim().equals("")) {
+                    JOptionPane.showMessageDialog(null, "Please Fill Every Field", "Insertion",
+                            JOptionPane.INFORMATION_MESSAGE);
                 } else {
-                    dCon.addMovieRecord(addMovieFrame.titleTextField.getText(), addMovieFrame.genereTextField.getText(), addMovieFrame.durationTextField.getText(), addMovieFrame.imageStream);
+                    dCon.addMovieRecord(addMovieFrame.titleTextField.getText(), addMovieFrame.genereTextField.getText(),
+                            addMovieFrame.durationTextField.getText(), addMovieFrame.imageStream);
                     addMovieFrame.titleTextField.setText("");
                     addMovieFrame.genereTextField.setText("");
                     addMovieFrame.durationTextField.setText("");
@@ -292,16 +306,15 @@ public class MainGUI {
                 }
                 System.out.println("Price extracted: " + priceText);
                 double originalPrice = Double.parseDouble(priceText);
-                String[] options = {"Standard", "Student"};
+                String[] options = { "Standard", "Student" };
                 String userType = (String) JOptionPane.showInputDialog(
-                    MD.MDetailsFr,
-                    "Select Ticket Category:",
-                    "Pricing Tier",
-                    JOptionPane.QUESTION_MESSAGE,
-                    null,
-                    options,
-                    options[0]
-                );
+                        MD.MDetailsFr,
+                        "Select Ticket Category:",
+                        "Pricing Tier",
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        options,
+                        options[0]);
                 System.out.println("User selected: " + userType);
                 if (userType != null) {
                     System.out.println("Processing booking for: " + id + " Schedule: " + MD.given_id);
@@ -335,21 +348,65 @@ public class MainGUI {
                 MD.MDetailsFr.dispose();
             } else if (e.getActionCommand().equals("Delete Movie")) {
 
-                dCon.deleteMovie(MD.given_id);
-                try {
-                    Ad.updateDashboard();
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
+                // Admin Delete Safety Protocol - Two-step confirmation
+                int firstConfirm = JOptionPane.showConfirmDialog(
+                        null,
+                        "Are you sure you want to delete this movie?\n" +
+                                "Movie ID: " + MD.given_id + "\n\n" +
+                                "This action will permanently remove the movie from the system.",
+                        "Delete Movie - Confirmation",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.WARNING_MESSAGE);
+
+                if (firstConfirm == JOptionPane.YES_OPTION) {
+                    // Second confirmation for critical action
+                    int secondConfirm = JOptionPane.showConfirmDialog(
+                            null,
+                            "FINAL CONFIRMATION\n\n" +
+                                    "This will PERMANENTLY delete the movie and cannot be undone.\n" +
+                                    "All associated data (bookings, schedules) may be affected.\n\n" +
+                                    "Proceed with deletion?",
+                            "Delete Movie - Final Warning",
+                            JOptionPane.YES_NO_OPTION,
+                            JOptionPane.ERROR_MESSAGE);
+
+                    if (secondConfirm == JOptionPane.YES_OPTION) {
+                        dCon.deleteMovie(MD.given_id);
+                        JOptionPane.showMessageDialog(
+                                null,
+                                "Movie deleted successfully.",
+                                "Deletion Complete",
+                                JOptionPane.INFORMATION_MESSAGE);
+                        try {
+                            Ad.updateDashboard();
+                        } catch (SQLException ex) {
+                            ex.printStackTrace();
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                    } else {
+                        JOptionPane.showMessageDialog(
+                                null,
+                                "Movie deletion cancelled.",
+                                "Operation Cancelled",
+                                JOptionPane.INFORMATION_MESSAGE);
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(
+                            null,
+                            "Movie deletion cancelled.",
+                            "Operation Cancelled",
+                            JOptionPane.INFORMATION_MESSAGE);
                 }
                 MD.MDetailsFr.dispose();
             } else if (e.getActionCommand().equals("Add to Schedule")) {
                 schedule_a_movie(MD.given_id);
                 MD.MDetailsFr.dispose();
             } else if (e.getActionCommand().equals("Confirm Schedule")) {
-                dCon.addToSchedual(SFr.given_id,SFr.price_txt.getText(),SFr.stime_txt.getText(),SFr.etime_txt.getText(),SFr.datePicker.getJFormattedTextField().getText(),SFr.sHall.getSelectedItem().toString());
-               JOptionPane.showMessageDialog(null, "Schedule added", "Completed",  JOptionPane.INFORMATION_MESSAGE);
+                dCon.addToSchedual(SFr.given_id, SFr.price_txt.getText(), SFr.stime_txt.getText(),
+                        SFr.etime_txt.getText(), SFr.datePicker.getJFormattedTextField().getText(),
+                        SFr.sHall.getSelectedItem().toString());
+                JOptionPane.showMessageDialog(null, "Schedule added", "Completed", JOptionPane.INFORMATION_MESSAGE);
                 try {
                     Ad.updateDashboard();
                 } catch (SQLException ex) {
@@ -581,15 +638,16 @@ public class MainGUI {
 
         @Override
         public void mousePressed(MouseEvent e) {
-//            JPanel temp = (JPanel) e.getSource();
-//            JLabel selected_id = (JLabel) temp.getComponent(2);
-//            homePage_movie_Details_function(selected_id.getText());
+            // JPanel temp = (JPanel) e.getSource();
+            // JLabel selected_id = (JLabel) temp.getComponent(2);
+            // homePage_movie_Details_function(selected_id.getText());
         }
 
         @Override
         public void mouseReleased(MouseEvent e) {
             // System.out.println(e.getSource());
-            //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            // throw new UnsupportedOperationException("Not supported yet."); //To change
+            // body of generated methods, choose Tools | Templates.
         }
 
         @Override
