@@ -6,8 +6,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 public class DataConnector {
@@ -18,25 +16,35 @@ public class DataConnector {
 
     DataConnector() {
         try {
-
-            Class.forName("com.mysql.jdbc.Driver");
-            con = DriverManager.getConnection("jdbc:mysql://localhost:3306/cinematicketbooking", "root", "");
+            // Try new driver first, fall back to old driver if needed
+            try {
+                Class.forName("com.mysql.cj.jdbc.Driver");
+            } catch (ClassNotFoundException e) {
+                Class.forName("com.mysql.jdbc.Driver");
+            }
+            con = DriverManager.getConnection("jdbc:mysql://localhost:3306/cinematicketbooking?useSSL=false&serverTimezone=UTC", "root", "");
             stat = con.createStatement();
+            System.out.println("Database connected successfully!");
         } catch (Exception ex) {
+            System.err.println("Database connection failed: " + ex.getMessage());
             ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Database Error: " + ex.getMessage(), "Connection Failed", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     public void addUserRecord(String name, String pNo, String CNIC, String password) {
         try {
-            stat.executeUpdate("insert into user (User_Name,Password,PhoneNo,CNIC) VALUES('"
-                    + name + "','" + password + "','"
-                    + pNo + "','" + CNIC + "')");
+            String sql = "INSERT INTO user (User_Name, Password, PhoneNo, CNIC) VALUES(?, ?, ?, ?)";
+            PreparedStatement pst = con.prepareStatement(sql);
+            pst.setString(1, name);
+            pst.setString(2, password);
+            pst.setString(3, pNo);
+            pst.setString(4, CNIC);
+            pst.executeUpdate();
+            pst.close();
             JOptionPane.showMessageDialog(null, "SignUP Successful", "SignUp", JOptionPane.INFORMATION_MESSAGE);
-
-            //System.out.println(password);
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(null, "SignUP Not Successful", "SignUp Faild", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(null, "SignUP Not Successful: " + ex.getMessage(), "SignUp Failed", JOptionPane.INFORMATION_MESSAGE);
             ex.printStackTrace();
         }
     }
@@ -155,16 +163,24 @@ public class DataConnector {
         return null;
     }
 
+    //Added method to get movies by title or genre
     public ResultSet getSearchedMovie(String searchText) {
         searchText = searchText.trim();
         searchText = "%" + searchText + "%";
         try {
-            rs = stat.executeQuery("SELECT SCHEDULE.SCHEDULE_ID, movie.Movie_Title, movie.Movie_Cover_Photo FROM movie,SCHEDULE where SCHEDULE.MOVIE_ID = movie.Movie_ID AND schedule.s_date >= sysdate() AND UPPER(movie_title) LIKE UPPER('" + searchText + "')");
-
+            // CR-005: Added OR condition to fetch matches by Genre
+            String query = "SELECT SCHEDULE.SCHEDULE_ID, movie.Movie_Title, movie.Movie_Cover_Photo " +
+                           "FROM movie,SCHEDULE " + 
+                           "WHERE SCHEDULE.MOVIE_ID = movie.Movie_ID " + 
+                           "AND schedule.s_date >= sysdate() " + 
+                           "AND (UPPER(movie_title) LIKE UPPER('" + searchText + "') " + 
+                           "OR UPPER(Movie_Genere) LIKE UPPER('" + searchText + "'))";
+    
+            rs = stat.executeQuery(query);
             return rs;
-
+    
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(null, "SignIn Not Successful", "SignIn", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Search Failed", "Error", JOptionPane.INFORMATION_MESSAGE);
         }
         return null;
     }
@@ -202,20 +218,27 @@ public class DataConnector {
         return 0;
     }
 
+    //Added method to get number of search results by title or genre
     public int getNumberOfSearchResults(String searchText) {
         searchText = searchText.trim();
         searchText = "%" + searchText + "%";
         try {
             int n = 0;
-            ResultSet r = stat.executeQuery(" Select count(movie_id) from movie Join SCHEDULE using(MOVIE_ID) where schedule.s_date >= sysdate() AND UPPER(movie_title) LIKE UPPER('" + searchText + "')");
+            // CR-005: Added OR condition to count matches in Genre too
+            String query = "Select count(movie_id) from movie Join SCHEDULE using(MOVIE_ID) " + 
+                           "where schedule.s_date >= sysdate() " + 
+                           "AND (UPPER(movie_title) LIKE UPPER('" + searchText + "') " + 
+                           "OR UPPER(Movie_Genere) LIKE UPPER('" + searchText + "'))"; 
+                           
+            ResultSet r = stat.executeQuery(query);
             if (r.next()) {
                 n = r.getInt(1);
             }
             r.close();
             return n;
-
+    
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(null, "Try without punctuation marks", "Error", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Search Error", "Error", JOptionPane.ERROR_MESSAGE);
         }
         return 0;
     }
@@ -298,19 +321,50 @@ public class DataConnector {
         }
         return 0;
     }
-
-    public void confirmBooking(String uid, String given_id) {
+    public void confirmBooking(String uid, String given_id, String userType, double originalPrice) {
+        if (con == null) {
+            JOptionPane.showMessageDialog(null, "Database not connected", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         try {
-            String sql = "insert into Ticket (User_Login_ID,Schedule_ID) VALUES(?,?)";
+            double finalPrice = originalPrice;
+            String message = "Standard Ticket";
+            if (userType != null && userType.equalsIgnoreCase("Student")) {
+                finalPrice = originalPrice * 0.80;
+                message = "Student Discount Applied! Final Price: " + finalPrice;
+            } else {
+                message = "Standard Ticket. Price: " + originalPrice;
+            }
+
+            System.out.println("Inserting booking: User=" + uid + " Schedule=" + given_id);
+            
+            String sql = "INSERT INTO Ticket (User_Login_ID, Schedule_ID) VALUES(?, ?)";
             PreparedStatement pst = con.prepareStatement(sql);
-            pst.setString(1, uid);
-            pst.setString(2, given_id);
-            pst.executeUpdate();
-            JOptionPane.showMessageDialog(null, "Your seats are reserved :)", "Booking Successful", JOptionPane.INFORMATION_MESSAGE);
+            pst.setInt(1, Integer.parseInt(uid));
+            pst.setInt(2, Integer.parseInt(given_id));
+            int result = pst.executeUpdate();
+            pst.close();
+            
+            System.out.println("Booking result: " + result);
+            if (result > 0) {
+                JOptionPane.showMessageDialog(null, message + "\nBooking Successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, "Booking could not be completed", "Failed", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (NumberFormatException ex) {
+            System.err.println("Number format error: " + ex.getMessage());
+            JOptionPane.showMessageDialog(null, "Invalid data format", "Error", JOptionPane.ERROR_MESSAGE);
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(null, "No more seats available :(", "Booking Failed", JOptionPane.INFORMATION_MESSAGE);
+            System.err.println("SQL Error: " + ex.getMessage());
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Booking Failed: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception ex) {
+            System.err.println("General Error: " + ex.getMessage());
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
 
     public void cancelBooking(String uid, String given_id) {
         try {
@@ -355,6 +409,56 @@ public class DataConnector {
             ex.printStackTrace();
             //JOptionPane.showMessageDialog(null, "Try Again", "Opretion Failed", JOptionPane.INFORMATION_MESSAGE);
         }
+    }
+
+    /**
+     * Calculates total revenue from all ticket sales.
+     * RISK MITIGATION: This method performs heavy aggregation queries (SUM).
+     * To prevent performance impact, this should ONLY be called on-demand when
+     * the admin explicitly clicks the "Revenue Dashboard" button, NOT automatically
+     * on panel load or refresh.
+     * 
+     * @return Total revenue as sum of all Scheduled_Movie_Price from sold tickets
+     */
+    public double getTotalRevenue() {
+        try {
+            double totalRevenue = 0.0;
+            ResultSet r = stat.executeQuery("SELECT SUM(s.Scheduled_Movie_Price) FROM ticket t JOIN schedule s ON t.Schedule_ID = s.Schedule_ID");
+            if (r.next()) {
+                totalRevenue = r.getDouble(1);
+            }
+            r.close();
+            return totalRevenue;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error calculating revenue", "Error", JOptionPane.INFORMATION_MESSAGE);
+        }
+        return 0.0;
+    }
+
+    /**
+     * Gets the total count of tickets sold.
+     * RISK MITIGATION: This method performs aggregation queries (COUNT).
+     * To prevent performance impact, this should ONLY be called on-demand when
+     * the admin explicitly clicks the "Revenue Dashboard" button, NOT automatically
+     * on panel load or refresh.
+     * 
+     * @return Total number of tickets sold
+     */
+    public int getTotalTicketsSold() {
+        try {
+            int totalTickets = 0;
+            ResultSet r = stat.executeQuery("SELECT COUNT(Ticket_ID) FROM ticket");
+            if (r.next()) {
+                totalTickets = r.getInt(1);
+            }
+            r.close();
+            return totalTickets;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error counting tickets", "Error", JOptionPane.INFORMATION_MESSAGE);
+        }
+        return 0;
     }
 
 }

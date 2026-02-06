@@ -1,11 +1,13 @@
 
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 
 
 public class MovieDetails {
 
-    JFrame MDetailsFr;
-    String given_id;
+    public JFrame MDetailsFr;
+    public String given_id;
+    public JLabel rate;
     
     
     
@@ -15,13 +17,15 @@ public class MovieDetails {
     
     public void initMovieDetails(){
         
-        MDetailsFr = new JFrame("Details");
+        MDetailsFr = new JFrame("Movie Details");
         
       
         MDetailsFr.setLayout(null);
-        MDetailsFr.setBounds(100, 0, 700, 529);
+        MDetailsFr.setBounds(100, 0, 700, 600);
         MDetailsFr.setResizable(false);
+        MDetailsFr.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         MDetailsFr.setVisible(true);
+        MDetailsFr.setAlwaysOnTop(true);
         
         
     }

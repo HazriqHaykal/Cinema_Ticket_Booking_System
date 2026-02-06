@@ -56,6 +56,7 @@ public class HomePage {
         dashBtn.setFocusPainted(false);
         dashBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         search = new JTextField();
+        search.setToolTipText("Search by Title or Genre (e.g., Action, Horror)"); //tooltip for search field
         searchBtn = new JButton("Go");
         searchBtn.setFocusPainted(false);
         searchBtn.setBorder(new LineBorder(Color.WHITE));

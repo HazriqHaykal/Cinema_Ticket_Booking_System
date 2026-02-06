@@ -24,6 +24,7 @@ public class Admin {
     JButton lOutBtn;
     JButton pswdBtn;
     JButton addBtn;
+    JButton revenueBtn; // New button for revenue report
     DataConnector dCon;
     ImageIcon icon;
     ResultSet rs;
@@ -63,6 +64,12 @@ public class Admin {
         addBtn.setBorderPainted(false);
         addBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
+        // Initialize the revenue report button
+        revenueBtn = new JButton("Revenue Dashboard");
+        revenueBtn.setFocusPainted(false);
+        revenueBtn.setBorderPainted(false);
+        revenueBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
         scrollPane = new ScrollPane();
 
         scrollPane.setBounds(0, 100, 1095, 500);
@@ -84,20 +91,27 @@ public class Admin {
         addBtn.setBackground(Color.BLACK);
         addBtn.setForeground(Color.WHITE);
 
-        pswdBtn.setBounds(710, 30, 150, 30);
+        // Set bounds and styles for the revenue report button
+        revenueBtn.setBounds(720, 30, 140, 30);
+        revenueBtn.setBackground(Color.BLACK);
+        revenueBtn.setForeground(Color.WHITE);
+
+        pswdBtn.setBounds(870, 30, 140, 30);
         pswdBtn.setBackground(Color.BLACK);
         pswdBtn.setForeground(Color.WHITE);
 
-        lOutBtn.setBounds(980, 30, 100, 30);
+        lOutBtn.setBounds(1020, 30, 80, 30);
         lOutBtn.setBackground(Color.BLACK);
         lOutBtn.setForeground(Color.WHITE);
 
         addBtn.addActionListener(hnd);
         pswdBtn.addActionListener(hnd);
         lOutBtn.addActionListener(hnd);
+        revenueBtn.addActionListener(hnd); // Add action listener for revenue button
 
         dashboardPnl.add(userNameLbl);
         dashboardPnl.add(addBtn);
+        dashboardPnl.add(revenueBtn); // Add revenue button to the dashboard
         dashboardPnl.add(pswdBtn);
         dashboardPnl.add(lOutBtn);
         dashboardPnl.setVisible(false);
@@ -224,6 +238,94 @@ public class Admin {
         scrollPane.add(innerPanel);
         dashboardPnl.add(scrollPane);
 
+    }
+
+    /**
+     * Displays the revenue dashboard with ticket sales statistics.
+     * RISK MITIGATION: This method performs database aggregation queries (SUM, COUNT)
+     * only when explicitly called via button click. It does NOT run automatically
+     * on admin panel load/refresh to prevent database performance impact.
+     * 
+     * @throws SQLException if database query fails
+     */
+    public void displayRevenueDashboard() throws SQLException {
+        innerPanel.removeAll();
+        innerPanel.setBackground(Color.BLACK);
+        
+        // Fetch revenue data only on-demand (button click) - not automatically
+        double totalRevenue = dCon.getTotalRevenue();
+        int totalTickets = dCon.getTotalTicketsSold();
+        
+        JLabel revenueTitleLbl = new JLabel("Revenue Dashboard");
+        revenueTitleLbl.setBounds(100, 50, 500, 50);
+        revenueTitleLbl.setFont(new Font("Times new roman", Font.BOLD, 35));
+        revenueTitleLbl.setForeground(Color.WHITE);
+        innerPanel.add(revenueTitleLbl);
+        
+        JLabel totalRevenueLbl = new JLabel("Total Revenue:");
+        totalRevenueLbl.setBounds(100, 150, 300, 40);
+        totalRevenueLbl.setFont(new Font("Times new roman", Font.BOLD, 25));
+        totalRevenueLbl.setForeground(Color.WHITE);
+        innerPanel.add(totalRevenueLbl);
+        
+        JLabel totalRevenueValueLbl = new JLabel("Rs. " + String.format("%.2f", totalRevenue));
+        totalRevenueValueLbl.setBounds(450, 150, 400, 40);
+        totalRevenueValueLbl.setFont(new Font("Times new roman", Font.BOLD, 25));
+        totalRevenueValueLbl.setForeground(Color.GREEN);
+        innerPanel.add(totalRevenueValueLbl);
+        
+        JLabel totalTicketsLbl = new JLabel("Total Tickets Sold:");
+        totalTicketsLbl.setBounds(100, 220, 300, 40);
+        totalTicketsLbl.setFont(new Font("Times new roman", Font.BOLD, 25));
+        totalTicketsLbl.setForeground(Color.WHITE);
+        innerPanel.add(totalTicketsLbl);
+        
+        JLabel totalTicketsValueLbl = new JLabel(String.valueOf(totalTickets));
+        totalTicketsValueLbl.setBounds(450, 220, 400, 40);
+        totalTicketsValueLbl.setFont(new Font("Times new roman", Font.BOLD, 25));
+        totalTicketsValueLbl.setForeground(Color.CYAN);
+        innerPanel.add(totalTicketsValueLbl);
+        
+        if (totalTickets > 0) {
+            double averagePrice = totalRevenue / totalTickets;
+            JLabel avgPriceLbl = new JLabel("Average Ticket Price:");
+            avgPriceLbl.setBounds(100, 290, 300, 40);
+            avgPriceLbl.setFont(new Font("Times new roman", Font.BOLD, 25));
+            avgPriceLbl.setForeground(Color.WHITE);
+            innerPanel.add(avgPriceLbl);
+            
+            JLabel avgPriceValueLbl = new JLabel("Rs. " + String.format("%.2f", averagePrice));
+            avgPriceValueLbl.setBounds(450, 290, 400, 40);
+            avgPriceValueLbl.setFont(new Font("Times new roman", Font.BOLD, 25));
+            avgPriceValueLbl.setForeground(Color.YELLOW);
+            innerPanel.add(avgPriceValueLbl);
+        }
+        
+        JButton refreshBtn = new JButton("Refresh");
+        refreshBtn.setBounds(100, 360, 150, 40);
+        refreshBtn.setFont(new Font("Times new roman", Font.BOLD, 18));
+        refreshBtn.setBackground(Color.DARK_GRAY);
+        refreshBtn.setForeground(Color.WHITE);
+        refreshBtn.setFocusPainted(false);
+        refreshBtn.setBorderPainted(false);
+        refreshBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        refreshBtn.addActionListener(hnd);
+        innerPanel.add(refreshBtn);
+        
+        JButton backToHomeBtn = new JButton("Back to Home");
+        backToHomeBtn.setBounds(270, 360, 200, 40);
+        backToHomeBtn.setFont(new Font("Times new roman", Font.BOLD, 18));
+        backToHomeBtn.setBackground(Color.DARK_GRAY);
+        backToHomeBtn.setForeground(Color.WHITE);
+        backToHomeBtn.setFocusPainted(false);
+        backToHomeBtn.setBorderPainted(false);
+        backToHomeBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        backToHomeBtn.addActionListener(hnd);
+        innerPanel.add(backToHomeBtn);
+        
+        innerPanel.setPreferredSize(new Dimension(950, 450));
+        scrollPane.add(innerPanel);
+        dashboardPnl.add(scrollPane);
     }
 
     public void setData(String uName) {

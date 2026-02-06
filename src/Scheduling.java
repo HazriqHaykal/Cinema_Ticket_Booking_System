@@ -3,12 +3,14 @@ import java.awt.Color;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Properties;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import org.jdatepicker.impl.JDatePanelImpl;
 import org.jdatepicker.impl.JDatePickerImpl;
@@ -18,8 +20,8 @@ public class Scheduling {
 
     JFrame schedulingFr;
     String given_id;
-    JLabel stime_Lbl, etime_Lbl, date_Lbl,price_Lbl;
-    JTextField stime_txt, etime_txt, price_txt;
+    JLabel stime_Lbl, etime_Lbl, date_Lbl, price_Lbl, seats_Lbl;
+    JTextField stime_txt, etime_txt, price_txt, seats_txt;
     JComboBox sHall;
     JDatePickerImpl datePicker;
 
@@ -34,16 +36,22 @@ public class Scheduling {
         price_Lbl.setBounds(350, 70, 300, 20);
         price_txt=new JTextField();
         price_txt.setBounds(350, 90, 300, 30);
+        
+        seats_Lbl = new JLabel("Available Seats:");
+        seats_Lbl.setBounds(350, 130, 300, 20);
+        seats_txt = new JTextField();
+        seats_txt.setBounds(350, 150, 300, 30);
+        
         stime_Lbl = new JLabel("Starting Time:");
-        stime_Lbl.setBounds(350, 130, 300, 20);
+        stime_Lbl.setBounds(350, 190, 300, 20);
         stime_txt = new JTextField();
-        stime_txt.setBounds(350, 150, 300, 30);
+        stime_txt.setBounds(350, 210, 300, 30);
         etime_Lbl = new JLabel("Ending Time:");
-        etime_Lbl.setBounds(350, 190, 300, 20);
+        etime_Lbl.setBounds(350, 250, 300, 20);
         etime_txt = new JTextField();
-        etime_txt.setBounds(350, 210, 300, 30);
+        etime_txt.setBounds(350, 270, 300, 30);
         date_Lbl = new JLabel("Date:");
-        date_Lbl.setBounds(350, 250, 300, 20);
+        date_Lbl.setBounds(350, 310, 300, 20);
 
         UtilDateModel model = new UtilDateModel();
         Properties p = new Properties();
@@ -52,14 +60,16 @@ public class Scheduling {
         p.put("text.year", "Year");
         JDatePanelImpl datePanel = new JDatePanelImpl(model, p);
         datePicker = new JDatePickerImpl(datePanel, new DateLabelFormatter());
-        datePicker.setBounds(350, 270, 300, 30);
+        datePicker.setBounds(350, 330, 300, 30);
         
 
         sHall = new JComboBox();
-        sHall.setBounds(350, 310, 300, 30);
+        sHall.setBounds(350, 370, 300, 30);
 
         schedulingFr.add(price_Lbl);
         schedulingFr.add(price_txt);
+        schedulingFr.add(seats_Lbl);
+        schedulingFr.add(seats_txt);
         schedulingFr.add(stime_Lbl);
         schedulingFr.add(stime_txt);
         schedulingFr.add(etime_Lbl);
@@ -72,6 +82,22 @@ public class Scheduling {
         schedulingFr.setResizable(false);
         schedulingFr.setVisible(true);
     }
+
+    public boolean isValidDate() {
+      Date selectedDate = (Date) datePicker.getModel().getValue();
+      Date today = new Date();
+
+      if (selectedDate != null && selectedDate.before(today)) {
+         JOptionPane.showMessageDialog(
+            null,
+            "Error: You cannot schedule a movie for a past date.",
+            "Date Error",
+            JOptionPane.ERROR_MESSAGE
+         );
+         return false;
+      }
+      return true;
+   }
 
     public class DateLabelFormatter extends AbstractFormatter {
 
@@ -96,3 +122,4 @@ public class Scheduling {
     }
 
 }
+
