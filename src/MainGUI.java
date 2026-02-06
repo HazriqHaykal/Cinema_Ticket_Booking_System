@@ -95,6 +95,8 @@ public class MainGUI {
 
                 if (sUp.userName.getText().trim().equals("") || sUp.cnic.getText().trim().equals("") || sUp.pass.getText().trim().equals("") || sUp.phone.getText().trim().equals("")) {
                     JOptionPane.showMessageDialog(null, "Please Fill Every Field", "SignUp", JOptionPane.INFORMATION_MESSAGE);
+                } else if (sUp.pass.getText().length() < 8) {
+                    JOptionPane.showMessageDialog(null, "Password must be at least 8 characters long", "SignUp", JOptionPane.INFORMATION_MESSAGE);
                 } else {
                     dCon.addUserRecord(sUp.userName.getText(), sUp.phone.getText(), sUp.cnic.getText(), sUp.pass.getText());
                     sUp.userName.setText("");
